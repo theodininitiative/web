@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>S Y S T E M _ O V E R R I D E</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #00ff41; /* Classic Matrix/Terminal Green */
+            font-family: "Courier New", Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        /* Scanline Effect for that Old Monitor Vibe */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        #terminal {
+            width: 80%;
+            max-width: 600px;
+            border: 2px solid #00ff41;
+            padding: 20px;
+            background: rgba(0, 20, 0, 0.9);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        #boot-screen {
+            text-align: center;
+        }
+
+        button {
+            background: #00ff41;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover { background: #008f11; }
+
+        input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #00ff41;
+            color: #00ff41;
+            font-family: inherit;
+            font-size: 1.2rem;
+            outline: none;
+            width: 100%;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="terminal">
+    <div id="boot-screen">
+        <p>TERMINAL ID: 77-B / STATUS: ENCRYPTED</p>
+        <button onclick="startSystem()">INITIALIZE SYSTEM</button>
+    </div>
+
+    <div id="main-system" class="hidden">
+        <p>UNAUTHORIZED ACCESS DETECTED...</p>
+        <p>ENTER PASSCODE:</p>
+        <input type="password" id="passInput" onkeydown="checkPass(event)" autofocus>
+        <p id="feedback" style="margin-top: 20px; color: #ff0000;"></p>
+    </div>
+</div>
+
+<script>
+    // Audio Context for Morse Code (Synthetic)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playMorse() {
+        // This is a simple repeating 'DASH DASH DOT' (M) loop
+        // You can customize this timing for your specific clue!
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(600, audioCtx.currentTime); // Pitch
+
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        
+        // Example: Morse sequence logic would go here
+        // For now, let's just make it a rhythmic beep
+        setInterval(() => {
+            gainNode.gain.setTargetAtTime(0.1, audioCtx.currentTime, 0.01);
+            setTimeout(() => {
+                gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
+            }, 200); // 200ms beep
+        }, 1000); // repeats every second
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+    }
+
+    function startSystem() {
+        document.getElementById('boot-screen').classList.add('hidden');
+        document.getElementById('main-system').classList.remove('hidden');
+        playMorse();
+        document.getElementById('passInput').focus();
+    }
+
+    function checkPass(event) {
+        if (event.key === "Enter") {
+            const val = document.getElementById('passInput').value.toLowerCase();
+            if (val === "answer") { // Change "answer" to your password
+                document.getElementById('feedback').style.color = "#00ff41";
+                document.getElementById('feedback').innerText = "ACCESS GRANTED. REDIRECTING...";
+                // window.location.href = "next-clue.html";
+            } else {
+                document.getElementById('feedback').innerText = "INCORRECT CREDENTIALS.";
+                document.getElementById('passInput').value = "";
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
