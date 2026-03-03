@@ -17,7 +17,7 @@
             text-shadow: 0 0 5px #00ff41;
         }
 
-        /* Scanline Effect */
+        /* CRT Scanline Effect */
         body::before {
             content: " ";
             display: block;
@@ -40,6 +40,7 @@
         }
 
         .hidden { display: none; }
+        
         input {
             background: transparent;
             border: none;
@@ -67,75 +68,55 @@
 </head>
 <body>
 
+<audio id="morseAudio" loop>
+    <source src="morse.wav" type="audio/wav">
+</audio>
+
 <div id="terminal">
     <div id="boot-screen">
         <p>ODIN INITIATIVE // TERMINAL 77-B</p>
-        <p>STATUS: SIGNAL INTERCEPTED</p>
-        <button onclick="startSystem()">DECRYPT SIGNAL</button>
+        <p>STATUS: INTERCEPTING SIGNAL...</p>
+        <button onclick="startSystem()">DECRYPT DATASTREAM</button>
     </div>
 
     <div id="main-system" class="hidden">
-        <p>> TRANSMISSION DETECTED [LOW FREQUENCY]</p>
+        <p>> SIGNAL STABILIZED. LISTENING...</p>
         <p>> ENTER DECRYPTION KEY:</p>
         <input type="text" id="passInput" onkeydown="checkPass(event)" autocomplete="off">
-        <p id="feedback" style="margin-top: 20px; color: #ff0000;"></p>
+        <p id="feedback" style="margin-top: 20px; color: #ff0000; min-height: 1.2em;"></p>
     </div>
 </div>
 
 <script>
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // Obfuscated timing: 1 = Dot, 3 = Dash, 0 = Word Space, 4 = Letter Space
-    // Message: "TO GET THE PASSWORD YOU MUST BREAK THE DECIMATORS CLOCK"
-    const sequence = [
-        3,0,3,3,3,4,3,3,3,1,1,1,3,1,4,1,1,1,3,4,3,0,1,1,1,1,1,4,1,4,3,0,3,4,1,1,1,3,3,1,1,4,1,1,3,3,4,3,3,3,3,3,1,3,3,4,3,3,3,1,1,3,4,1,1,3,4,1,1,1,3,4,3,3,0,3,3,4,1,1,3,4,1,1,1,4,3,4,1,1,1,1,0,1,1,1,4,1,1,3,1,4,1,1,1,4,1,4,3,1,1,3,4,3,3,3,0,3,4,1,1,1,1,1,4,1,4,3,1,1,1,3,1,1,4,1,1,1,4,1,3,1,4,1,1,4,1,1,1,4,3,1,3,1,4,3,3,3,4,3,1,3,1,4,1,3,1,1,4,3,3,3,4,1,1,1,4,3,1,3,1,4,1,3,1,1,4,3,3,3,4,1,3,1,3,1,3,0,3,1,3,1,4,1,3,1,1,4,3,3,3,4,1,3,3,4,3,1,3,1
-    ];
-
-    const unit = 100; // Speed in ms
-
-    async function playBeep(len) {
-        if (len === 0) { await new Promise(r => setTimeout(r, unit * 7)); return; }
-        if (len === 4) { await new Promise(r => setTimeout(r, unit * 3)); return; }
-        
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.frequency.value = 550;
-        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-        osc.start();
-        await new Promise(r => setTimeout(r, len * unit));
-        osc.stop();
-        await new Promise(r => setTimeout(r, unit));
-    }
-
-    async function loopMorse() {
-        while(true) {
-            for (let pulse of sequence) await playBeep(pulse);
-            await new Promise(r => setTimeout(r, 4000));
-        }
-    }
+    const morse = document.getElementById('morseAudio');
 
     function startSystem() {
-        audioCtx.resume();
+        // Show terminal and play audio
         document.getElementById('boot-screen').classList.add('hidden');
         document.getElementById('main-system').classList.remove('hidden');
         document.getElementById('passInput').focus();
-        loopMorse();
+        
+        // Browsers require a user click to play audio
+        morse.play().catch(error => {
+            console.log("Audio failed to play. Check if morse.wav is in the root folder.");
+        });
     }
 
     function checkPass(e) {
         if (e.key === "Enter") {
             const val = document.getElementById('passInput').value.trim().toUpperCase();
-            // This checks the password 'CHRONOS_FRACTURE' without typing it in the code
+            
+            // Base64 check for 'CHRONOS_FRACTURE'
             if (btoa(val) === "Q0hST05PU19GUkFDVFVSRQ==") {
                 document.getElementById('feedback').style.color = "#00ff41";
-                document.getElementById('feedback').innerText = "> ACCESS GRANTED. LOADING LORE_DUMP...";
+                document.getElementById('feedback').innerText = "> ACCESS GRANTED. OPENING ARCHIVE...";
+                
                 setTimeout(() => {
+                    // Redirects to CHRONOS_FRACTURE.html
                     window.location.href = val + ".html"; 
                 }, 1500);
             } else {
-                document.getElementById('feedback').innerText = "> ERROR: INVALID COMMAND.";
+                document.getElementById('feedback').innerText = "> ERROR: INCORRECT COMMAND.";
                 document.getElementById('passInput').value = "";
             }
         }
