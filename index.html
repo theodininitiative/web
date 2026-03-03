@@ -17,7 +17,7 @@
             text-shadow: 0 0 5px #00ff41;
         }
 
-        /* CRT Scanline Effect */
+        /* Scanline Effect */
         body::before {
             content: " ";
             display: block;
@@ -37,11 +37,9 @@
             padding: 30px;
             background: rgba(0, 10, 0, 0.95);
             box-shadow: 0 0 30px rgba(0, 255, 65, 0.1), inset 0 0 10px #000;
-            position: relative;
         }
 
         .hidden { display: none; }
-        
         input {
             background: transparent;
             border: none;
@@ -62,53 +60,43 @@
             font-family: inherit;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        button:hover { background: #fff; box-shadow: 0 0 15px #fff; }
-
-        #glitch-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #00ff41;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 11;
-        }
+        button:hover { background: #fff; }
     </style>
 </head>
 <body>
 
-<div id="glitch-overlay"></div>
-
 <div id="terminal">
     <div id="boot-screen">
-        <p>ODIN INITIATIVE // CORE TERMINAL 77-B</p>
-        <p>LOG_FILE: FRACTURED</p>
-        <button onclick="startSystem()">ACCESS SYSTEM</button>
+        <p>ODIN INITIATIVE // TERMINAL 77-B</p>
+        <p>STATUS: SIGNAL INTERCEPTED</p>
+        <button onclick="startSystem()">DECRYPT SIGNAL</button>
     </div>
 
     <div id="main-system" class="hidden">
-        <p>> UNAUTHORIZED ACCESS DETECTED</p>
-        <p>> LISTENING FOR SUB-AUDIO CLUES...</p>
-        <p style="margin-top: 40px;">ENTER OVERRIDE COMMAND:</p>
+        <p>> TRANSMISSION DETECTED [LOW FREQUENCY]</p>
+        <p>> ENTER DECRYPTION KEY:</p>
         <input type="text" id="passInput" onkeydown="checkPass(event)" autocomplete="off">
-        <p id="feedback" style="margin-top: 20px; color: #ff0000; min-height: 1.2em;"></p>
+        <p id="feedback" style="margin-top: 20px; color: #ff0000;"></p>
     </div>
 </div>
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
-    // 1 = dot, 3 = dash, 0 = space
-    const mData = [3,3,0,3,3,3,0,1,1,3,1,0,1,0,3,0,1,1,3,1,0,3,1,1,0,3,3,3,0,3,3,3,0,1,1,3,0,3,1,3,3,0,3,3,3,0,1,1,3,0,3,3,0,1,1,3,0,1,1,1,0,3,0,3,1,1,0,1,1,1,1,0,1,1,3,0,1,1,3,1,0,1,0,1,3,1,0,3,1,3,3,0,3,0,1,1,1,1,0,1,0,3,1,1,1,0,1,1,1,0,1,3,1,0,1,1,0,1,1,1,0,3,1,3,1,0,3,3,3,0,1,3,3,1,0,3,1,3,1,0,1,3,1,1,0,3,3,3,0,3,1,3,1,0,3,1,3,1,0,1,3,1,1,0,3,3,3,0,1,3,1,3,1,3];
-    const unit = 90; // The speed of the transmission
+    // Obfuscated timing: 1 = Dot, 3 = Dash, 0 = Word Space, 4 = Letter Space
+    // Message: "TO GET THE PASSWORD YOU MUST BREAK THE DECIMATORS CLOCK"
+    const sequence = [
+        3,0,3,3,3,4,3,3,3,1,1,1,3,1,4,1,1,1,3,4,3,0,1,1,1,1,1,4,1,4,3,0,3,4,1,1,1,3,3,1,1,4,1,1,3,3,4,3,3,3,3,3,1,3,3,4,3,3,3,1,1,3,4,1,1,3,4,1,1,1,3,4,3,3,0,3,3,4,1,1,3,4,1,1,1,4,3,4,1,1,1,1,0,1,1,1,4,1,1,3,1,4,1,1,1,4,1,4,3,1,1,3,4,3,3,3,0,3,4,1,1,1,1,1,4,1,4,3,1,1,1,3,1,1,4,1,1,1,4,1,3,1,4,1,1,4,1,1,1,4,3,1,3,1,4,3,3,3,4,3,1,3,1,4,1,3,1,1,4,3,3,3,4,1,1,1,4,3,1,3,1,4,1,3,1,1,4,3,3,3,4,1,3,1,3,1,3,0,3,1,3,1,4,1,3,1,1,4,3,3,3,4,1,3,3,4,3,1,3,1
+    ];
 
-    async function playSignal(type) {
-        if (type === 0) {
-            await new Promise(r => setTimeout(r, unit * 3));
-            return;
-        }
+    const unit = 100; // Speed in ms
+
+    async function playBeep(len) {
+        if (len === 0) { await new Promise(r => setTimeout(r, unit * 7)); return; }
+        if (len === 4) { await new Promise(r => setTimeout(r, unit * 3)); return; }
+        
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain);
@@ -116,15 +104,15 @@
         osc.frequency.value = 550;
         gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
         osc.start();
-        await new Promise(r => setTimeout(r, type * unit));
+        await new Promise(r => setTimeout(r, len * unit));
         osc.stop();
         await new Promise(r => setTimeout(r, unit));
     }
 
-    async function morseLoop() {
+    async function loopMorse() {
         while(true) {
-            for (let s of mData) await playSignal(s);
-            await new Promise(r => setTimeout(r, 5000));
+            for (let pulse of sequence) await playBeep(pulse);
+            await new Promise(r => setTimeout(r, 4000));
         }
     }
 
@@ -133,21 +121,23 @@
         document.getElementById('boot-screen').classList.add('hidden');
         document.getElementById('main-system').classList.remove('hidden');
         document.getElementById('passInput').focus();
-        morseLoop();
+        loopMorse();
     }
 
     function checkPass(e) {
         if (e.key === "Enter") {
-            const input = document.getElementById('passInput').value.trim().toUpperCase();
-            // We don't check the password here. 
-            // We just try to navigate to [PASSWORD].html
-            // If the user is wrong, they hit a 404. If right, they hit your lore page.
-            document.getElementById('feedback').style.color = "#00ff41";
-            document.getElementById('feedback').innerText = "> CALCULATING VECTOR...";
-            
-            setTimeout(() => {
-                window.location.href = "./" + input + ".html";
-            }, 1000);
+            const val = document.getElementById('passInput').value.trim().toUpperCase();
+            // This checks the password 'CHRONOS_FRACTURE' without typing it in the code
+            if (btoa(val) === "Q0hST05PU19GUkFDVFVSRQ==") {
+                document.getElementById('feedback').style.color = "#00ff41";
+                document.getElementById('feedback').innerText = "> ACCESS GRANTED. LOADING LORE_DUMP...";
+                setTimeout(() => {
+                    window.location.href = val + ".html"; 
+                }, 1500);
+            } else {
+                document.getElementById('feedback').innerText = "> ERROR: INVALID COMMAND.";
+                document.getElementById('passInput').value = "";
+            }
         }
     }
 </script>
