@@ -5,8 +5,8 @@
     <title>S Y S T E M _ O V E R R I D E</title>
     <style>
         body {
-            background-color: #0a0a0a;
-            color: #00ff41; /* Classic Matrix/Terminal Green */
+            background-color: #050505;
+            color: #00ff41;
             font-family: "Courier New", Courier, monospace;
             display: flex;
             justify-content: center;
@@ -17,45 +17,31 @@
             text-shadow: 0 0 5px #00ff41;
         }
 
-        /* Scanline Effect for that Old Monitor Vibe */
+        /* CRT Scanline Effect */
         body::before {
             content: " ";
             display: block;
             position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
+            z-index: 10;
+            background-size: 100% 3px, 3px 100%;
             pointer-events: none;
         }
 
         #terminal {
-            width: 80%;
-            max-width: 600px;
-            border: 2px solid #00ff41;
-            padding: 20px;
-            background: rgba(0, 20, 0, 0.9);
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            width: 85%;
+            max-width: 650px;
+            border: 1px solid #004411;
+            padding: 30px;
+            background: rgba(0, 10, 0, 0.95);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1), inset 0 0 10px #000;
+            position: relative;
         }
 
-        #boot-screen {
-            text-align: center;
-        }
-
-        button {
-            background: #00ff41;
-            color: black;
-            border: none;
-            padding: 10px 20px;
-            font-family: inherit;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        button:hover { background: #008f11; }
-
+        .hidden { display: none; }
+        
         input {
             background: transparent;
             border: none;
@@ -65,76 +51,105 @@
             font-size: 1.2rem;
             outline: none;
             width: 100%;
+            text-transform: uppercase;
         }
 
-        .hidden { display: none; }
+        button {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover { background: #fff; box-shadow: 0 0 15px #fff; }
+
+        #glitch-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #00ff41;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 11;
+        }
     </style>
 </head>
 <body>
 
+<div id="glitch-overlay"></div>
+
 <div id="terminal">
     <div id="boot-screen">
-        <p>TERMINAL ID: 77-B / STATUS: ENCRYPTED</p>
-        <button onclick="startSystem()">INITIALIZE SYSTEM</button>
+        <p>ODIN INITIATIVE // CORE TERMINAL 77-B</p>
+        <p>LOG_FILE: FRACTURED</p>
+        <button onclick="startSystem()">ACCESS SYSTEM</button>
     </div>
 
     <div id="main-system" class="hidden">
-        <p>UNAUTHORIZED ACCESS DETECTED...</p>
-        <p>ENTER PASSCODE:</p>
-        <input type="password" id="passInput" onkeydown="checkPass(event)" autofocus>
-        <p id="feedback" style="margin-top: 20px; color: #ff0000;"></p>
+        <p>> UNAUTHORIZED ACCESS DETECTED</p>
+        <p>> LISTENING FOR SUB-AUDIO CLUES...</p>
+        <p style="margin-top: 40px;">ENTER OVERRIDE COMMAND:</p>
+        <input type="text" id="passInput" onkeydown="checkPass(event)" autocomplete="off">
+        <p id="feedback" style="margin-top: 20px; color: #ff0000; min-height: 1.2em;"></p>
     </div>
 </div>
 
 <script>
-    // Audio Context for Morse Code (Synthetic)
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
-    function playMorse() {
-        // This is a simple repeating 'DASH DASH DOT' (M) loop
-        // You can customize this timing for your specific clue!
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(600, audioCtx.currentTime); // Pitch
+    // 1 = dot, 3 = dash, 0 = space
+    const mData = [3,3,0,3,3,3,0,1,1,3,1,0,1,0,3,0,1,1,3,1,0,3,1,1,0,3,3,3,0,3,3,3,0,1,1,3,0,3,1,3,3,0,3,3,3,0,1,1,3,0,3,3,0,1,1,3,0,1,1,1,0,3,0,3,1,1,0,1,1,1,1,0,1,1,3,0,1,1,3,1,0,1,0,1,3,1,0,3,1,3,3,0,3,0,1,1,1,1,0,1,0,3,1,1,1,0,1,1,1,0,1,3,1,0,1,1,0,1,1,1,0,3,1,3,1,0,3,3,3,0,1,3,3,1,0,3,1,3,1,0,1,3,1,1,0,3,3,3,0,3,1,3,1,0,3,1,3,1,0,1,3,1,1,0,3,3,3,0,1,3,1,3,1,3];
+    const unit = 90; // The speed of the transmission
 
-        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-        
-        // Example: Morse sequence logic would go here
-        // For now, let's just make it a rhythmic beep
-        setInterval(() => {
-            gainNode.gain.setTargetAtTime(0.1, audioCtx.currentTime, 0.01);
-            setTimeout(() => {
-                gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
-            }, 200); // 200ms beep
-        }, 1000); // repeats every second
+    async function playSignal(type) {
+        if (type === 0) {
+            await new Promise(r => setTimeout(r, unit * 3));
+            return;
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = 550;
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        osc.start();
+        await new Promise(r => setTimeout(r, type * unit));
+        osc.stop();
+        await new Promise(r => setTimeout(r, unit));
+    }
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.start();
+    async function morseLoop() {
+        while(true) {
+            for (let s of mData) await playSignal(s);
+            await new Promise(r => setTimeout(r, 5000));
+        }
     }
 
     function startSystem() {
+        audioCtx.resume();
         document.getElementById('boot-screen').classList.add('hidden');
         document.getElementById('main-system').classList.remove('hidden');
-        playMorse();
         document.getElementById('passInput').focus();
+        morseLoop();
     }
 
-    function checkPass(event) {
-        if (event.key === "Enter") {
-            const val = document.getElementById('passInput').value.toLowerCase();
-            if (val === "answer") { // Change "answer" to your password
-                document.getElementById('feedback').style.color = "#00ff41";
-                document.getElementById('feedback').innerText = "ACCESS GRANTED. REDIRECTING...";
-                // window.location.href = "next-clue.html";
-            } else {
-                document.getElementById('feedback').innerText = "INCORRECT CREDENTIALS.";
-                document.getElementById('passInput').value = "";
-            }
+    function checkPass(e) {
+        if (e.key === "Enter") {
+            const input = document.getElementById('passInput').value.trim().toUpperCase();
+            // We don't check the password here. 
+            // We just try to navigate to [PASSWORD].html
+            // If the user is wrong, they hit a 404. If right, they hit your lore page.
+            document.getElementById('feedback').style.color = "#00ff41";
+            document.getElementById('feedback').innerText = "> CALCULATING VECTOR...";
+            
+            setTimeout(() => {
+                window.location.href = "./" + input + ".html";
+            }, 1000);
         }
     }
 </script>
-
 </body>
 </html>
