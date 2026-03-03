@@ -6,8 +6,9 @@
     <style>
         body {
             background-color: #0a0a0a;
-            color: #00ff41; /* Classic Matrix/Terminal Green */
+            color: #00ff41; 
             font-family: "Courier New", Courier, monospace;
+            /* Flexbox centering */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,7 +18,7 @@
             text-shadow: 0 0 5px #00ff41;
         }
 
-        /* Scanline Effect for that Old Monitor Vibe */
+        /* Scanline Effect */
         body::before {
             content: " ";
             display: block;
@@ -34,11 +35,12 @@
             width: 80%;
             max-width: 600px;
             border: 2px solid #00ff41;
-            padding: 20px;
+            padding: 40px; /* Increased padding for better centering look */
             background: rgba(0, 20, 0, 0.9);
             box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
             position: relative;
             z-index: 1;
+            text-align: center; /* Centers the text inside the terminal */
         }
 
         #boot-screen {
@@ -67,6 +69,8 @@
             font-size: 1.2rem;
             outline: none;
             width: 100%;
+            text-align: center; /* Centers the dots in the password box */
+            margin-top: 10px;
         }
 
         .hidden { display: none; }
@@ -100,21 +104,18 @@
         document.getElementById('main-system').classList.remove('hidden');
         document.getElementById('passInput').focus();
         
-        // Play your uploaded morse.wav file
-        morse.play().catch(e => console.log("Audio file 'morse.wav' not found in root directory."));
+        morse.play().catch(e => console.log("Audio file 'morse.wav' not found."));
     }
 
     function checkPass(event) {
         if (event.key === "Enter") {
             const val = document.getElementById('passInput').value.trim().toUpperCase();
             
-            // Using Base64 to hide 'CHRONOS_FRACTURE' from basic source-code viewing
             if (btoa(val) === "Q0hST05PU19GUkFDVFVSRQ==") {
                 document.getElementById('feedback').style.color = "#00ff41";
                 document.getElementById('feedback').innerText = "ACCESS GRANTED. REDIRECTING...";
                 
                 setTimeout(() => {
-                    // This opens your lore page: CHRONOS_FRACTURE.html
                     window.location.href = val + ".html";
                 }, 1500);
             } else {
