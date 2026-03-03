@@ -5,8 +5,8 @@
     <title>S Y S T E M _ O V E R R I D E</title>
     <style>
         body {
-            background-color: #050505;
-            color: #00ff41;
+            background-color: #0a0a0a;
+            color: #00ff41; /* Classic Matrix/Terminal Green */
             font-family: "Courier New", Courier, monospace;
             display: flex;
             justify-content: center;
@@ -17,30 +17,47 @@
             text-shadow: 0 0 5px #00ff41;
         }
 
-        /* CRT Scanline Effect */
+        /* Scanline Effect for that Old Monitor Vibe */
         body::before {
             content: " ";
             display: block;
             position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
-            z-index: 10;
-            background-size: 100% 3px, 3px 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
             pointer-events: none;
         }
 
         #terminal {
-            width: 85%;
-            max-width: 650px;
-            border: 1px solid #004411;
-            padding: 30px;
-            background: rgba(0, 10, 0, 0.95);
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1), inset 0 0 10px #000;
+            width: 80%;
+            max-width: 600px;
+            border: 2px solid #00ff41;
+            padding: 20px;
+            background: rgba(0, 20, 0, 0.9);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            position: relative;
+            z-index: 1;
         }
 
-        .hidden { display: none; }
-        
+        #boot-screen {
+            text-align: center;
+        }
+
+        button {
+            background: #00ff41;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover { background: #008f11; }
+
         input {
             background: transparent;
             border: none;
@@ -50,20 +67,9 @@
             font-size: 1.2rem;
             outline: none;
             width: 100%;
-            text-transform: uppercase;
         }
 
-        button {
-            background: #00ff41;
-            color: #000;
-            border: none;
-            padding: 12px 25px;
-            font-family: inherit;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:hover { background: #fff; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -74,16 +80,15 @@
 
 <div id="terminal">
     <div id="boot-screen">
-        <p>ODIN INITIATIVE // TERMINAL 77-B</p>
-        <p>STATUS: INTERCEPTING SIGNAL...</p>
-        <button onclick="startSystem()">DECRYPT DATASTREAM</button>
+        <p>TERMINAL ID: 77-B / STATUS: ENCRYPTED</p>
+        <button onclick="startSystem()">INITIALIZE SYSTEM</button>
     </div>
 
     <div id="main-system" class="hidden">
-        <p>> SIGNAL STABILIZED. LISTENING...</p>
-        <p>> ENTER DECRYPTION KEY:</p>
-        <input type="text" id="passInput" onkeydown="checkPass(event)" autocomplete="off">
-        <p id="feedback" style="margin-top: 20px; color: #ff0000; min-height: 1.2em;"></p>
+        <p>UNAUTHORIZED ACCESS DETECTED...</p>
+        <p>ENTER PASSCODE:</p>
+        <input type="password" id="passInput" onkeydown="checkPass(event)" autofocus>
+        <p id="feedback" style="margin-top: 20px; color: #ff0000;"></p>
     </div>
 </div>
 
@@ -91,36 +96,34 @@
     const morse = document.getElementById('morseAudio');
 
     function startSystem() {
-        // Show terminal and play audio
         document.getElementById('boot-screen').classList.add('hidden');
         document.getElementById('main-system').classList.remove('hidden');
         document.getElementById('passInput').focus();
         
-        // Browsers require a user click to play audio
-        morse.play().catch(error => {
-            console.log("Audio failed to play. Check if morse.wav is in the root folder.");
-        });
+        // Play your uploaded morse.wav file
+        morse.play().catch(e => console.log("Audio file 'morse.wav' not found in root directory."));
     }
 
-    function checkPass(e) {
-        if (e.key === "Enter") {
+    function checkPass(event) {
+        if (event.key === "Enter") {
             const val = document.getElementById('passInput').value.trim().toUpperCase();
             
-            // Base64 check for 'CHRONOS_FRACTURE'
+            // Using Base64 to hide 'CHRONOS_FRACTURE' from basic source-code viewing
             if (btoa(val) === "Q0hST05PU19GUkFDVFVSRQ==") {
                 document.getElementById('feedback').style.color = "#00ff41";
-                document.getElementById('feedback').innerText = "> ACCESS GRANTED. OPENING ARCHIVE...";
+                document.getElementById('feedback').innerText = "ACCESS GRANTED. REDIRECTING...";
                 
                 setTimeout(() => {
-                    // Redirects to CHRONOS_FRACTURE.html
-                    window.location.href = val + ".html"; 
+                    // This opens your lore page: CHRONOS_FRACTURE.html
+                    window.location.href = val + ".html";
                 }, 1500);
             } else {
-                document.getElementById('feedback').innerText = "> ERROR: INCORRECT COMMAND.";
+                document.getElementById('feedback').innerText = "INCORRECT CREDENTIALS.";
                 document.getElementById('passInput').value = "";
             }
         }
     }
 </script>
+
 </body>
 </html>
